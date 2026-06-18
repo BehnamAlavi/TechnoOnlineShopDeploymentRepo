@@ -21,12 +21,8 @@ jobs:
     permissions:
       contents: read
       packages: write
-    outputs:
-      techno-api-image: ${{ steps.image-names.outputs.techno-api }}
-      controlpanel-api-image: ${{ steps.image-names.outputs.controlpanel-api }}
-      frontend-image: ${{ steps.image-names.outputs.frontend }}
     steps:
-      - name: Checkout code
+      - name: Checkout deployment repo
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
@@ -39,40 +35,58 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set image names
-        id: image-names
+      - name: Clone Backend Repository
         run: |
-          REPO_OWNER=$(echo ${{ github.repository_owner }} | tr '[:upper:]' '[:lower:]')
-          echo "techno-api=${{ env.REGISTRY }}/$REPO_OWNER/technoshoponlinedeploy/techno-api:1.0.0" >> $GITHUB_OUTPUT
-          echo "controlpanel-api=${{ env.REGISTRY }}/$REPO_OWNER/technoshoponlinedeploy/controlpanel-api:1.0.0" >> $GITHUB_OUTPUT
-          echo "frontend=${{ env.REGISTRY }}/$REPO_OWNER/technoshoponlinedeploy/frontend:1.0.0" >> $GITHUB_OUTPUT
+          git clone https://github.com/BehnamAlavi/TechnoOnlineShop.git backend-repo
+          cd backend-repo
+          git checkout main || git checkout master
+
+      - name: Clone ControlPanel Repository
+        run: |
+          git clone https://github.com/Techno-Real/TechnoOnlineShop.ControlPanel.git controlpanel-repo
+          cd controlpanel-repo
+          git checkout main || git checkout master
+
+      - name: Clone Frontend Repository
+        run: |
+          git clone https://github.com/BehnamAlavi/TechnoOnlineShop.git frontend-repo
+          cd frontend-repo
+          # Assuming frontend is in a subdirectory
+          ls -la
+
+      - name: Get repository owner (lowercase)
+        id: repo-owner
+        run: |
+          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          echo "owner=$REPO_OWNER" >> $GITHUB_OUTPUT
 
       - name: Build and push Techno API
         uses: docker/build-push-action@v7
         with:
-          context: ./repos/backend
-          file: ./repos/backend/TechnoOnlineShop.Api/Dockerfile
+          context: ./backend-repo
+          file: ./backend-repo/TechnoOnlineShop.Api/Dockerfile
           push: true
-          tags: ${{ steps.image-names.outputs.techno-api }}
+          tags: ${{ env.REGISTRY }}/${{ steps.repo-owner.outputs.owner }}/technoshoponlinedeploy/techno-api:1.0.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build and push ControlPanel API
         uses: docker/build-push-action@v7
         with:
-          context: ./repos/controlpanel
-          file: ./repos/controlpanel/ControlPanel.TechnoOnlineShop.Api/Dockerfile
+          context: ./controlpanel-repo
+          file: ./controlpanel-repo/ControlPanel.TechnoOnlineShop.Api/Dockerfile
           push: true
-          tags: ${{ steps.image-names.outputs.controlpanel-api }}
+          tags: ${{ env.REGISTRY }}/${{ steps.repo-owner.outputs.owner }}/technoshoponlinedeploy/controlpanel-api:1.0.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Build and push Frontend
         uses: docker/build-push-action@v7
         with:
-          context: ./repos/frontend
+          context: ./frontend-repo/techno-shop-online
+          file: ./frontend-repo/techno-shop-online/Dockerfile
           push: true
-          tags: ${{ steps.image-names.outputs.frontend }}
+          tags: ${{ env.REGISTRY }}/${{ steps.repo-owner.outputs.owner }}/technoshoponlinedeploy/frontend:1.0.0
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -187,21 +201,3 @@ jobs:
           echo "  ControlPanel API: http://${{ env.VPS_HOST }}:5002"
           echo "  Nginx Proxy: http://${{ env.VPS_HOST }}:1211"
           EOF
-
-  notify:
-    needs: deploy
-    runs-on: ubuntu-latest
-    if: always()
-    steps:
-      - name: Deployment status
-        run: |
-          if [ "${{ needs.deploy.result }}" == "success" ]; then
-            echo "✓ Deployment to VPS succeeded"
-            echo "Services:"
-            echo "  - techno-api:1.0.0"
-            echo "  - controlpanel-api:1.0.0"
-            echo "  - frontend:1.0.0"
-          else
-            echo "✗ Deployment to VPS failed"
-            exit 1
-          fi
