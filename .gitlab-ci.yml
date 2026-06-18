@@ -1,0 +1,68 @@
+stages:
+  - transform
+  - transfer
+  - deploy
+  - verify
+
+variables:
+  VPS_HOST: ${VPS_HOST}
+  VPS_USER: ${VPS_USER}
+  VPS_PORT: ${VPS_PORT}
+  VPS_APP_PATH: /opt/techno-shop
+
+before_script:
+  - apt-get update -qq && apt-get install -y -qq openssh-client scp
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+  - echo "$VPS_SSH_KEY" > ~/.ssh/deploy_key
+  - chmod 600 ~/.ssh/deploy_key
+  - ssh-keyscan -p $VPS_PORT $VPS_HOST >> ~/.ssh/known_hosts 2>/dev/null || true
+
+Transform Config:
+  stage: transform
+  image: ubuntu:22.04
+  script:
+    - bash scripts/transform-compose.sh
+    - cat compose.prod.yaml
+  artifacts:
+    paths:
+      - compose.prod.yaml
+    expire_in: 1 day
+  only:
+    - main
+    - /^deploy-.*$/
+
+Transfer Files:
+  stage: transfer
+  image: ubuntu:22.04
+  dependencies:
+    - Transform Config
+  script:
+    - bash scripts/transfer-files.sh
+  only:
+    - main
+    - /^deploy-.*$/
+
+Deploy to VPS:
+  stage: deploy
+  image: ubuntu:22.04
+  dependencies:
+    - Transfer Files
+  script:
+    - bash scripts/deploy-vps.sh
+  only:
+    - main
+    - /^deploy-.*$/
+  environment:
+    name: production
+    url: http://${VPS_HOST}:1211
+
+Verify Deployment:
+  stage: verify
+  image: ubuntu:22.04
+  script:
+    - ssh -i ~/.ssh/deploy_key -p $VPS_PORT $VPS_USER@$VPS_HOST "docker ps -a"
+    - ssh -i ~/.ssh/deploy_key -p $VPS_PORT $VPS_USER@$VPS_HOST "cd $VPS_APP_PATH && docker compose ps"
+  only:
+    - main
+    - /^deploy-.*$/

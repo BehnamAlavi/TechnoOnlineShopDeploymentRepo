@@ -1,0 +1,99 @@
+# Environment Variables
+.env
+.env.local
+.env.*.local
+.env.production
+.env.*.production
+
+# SSH Keys
+.ssh/
+deploy_key
+deploy_key.pub
+*.pem
+*.ppk
+id_rsa
+id_ed25519
+
+# IDE & Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-workspace
+.project
+.classpath
+
+# Docker
+docker-compose.override.yml
+.dockerignore
+docker-compose.local.yml
+
+# Database
+*.sql
+!init.sql
+!technoshopdb.sql
+*.db
+*.sqlite
+*.sqlite3
+backup.sql
+dump.sql
+
+# Logs
+*.log
+logs/
+node_modules/
+npm-debug.log*
+yarn-error.log*
+
+# OS Files
+Thumbs.db
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Temporary files
+/tmp/
+/temp/
+*.tmp
+*.temp
+
+# Build artifacts
+dist/
+build/
+.next/
+out/
+obj/
+bin/
+
+# Dependencies
+node_modules/
+.npm
+package-lock.json
+yarn.lock
+.pnpm-lock.yaml
+
+# Backup files
+*.backup
+*.bak
+*.orig
+*.swp
+
+# Data volumes (local development)
+postgres_data/
+redis_data/
+data/
+
+# OS specific
+.vscode/settings.json
+.idea/workspace.xml
+
+# GitHub Actions
+.github/workflows/*.log
+
+# Misc
+.DS_Store
+*.pem
+*.key
+*.crt
