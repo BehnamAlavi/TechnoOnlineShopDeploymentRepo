@@ -70,6 +70,15 @@ jobs:
           REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           echo "owner=$REPO_OWNER" >> $GITHUB_OUTPUT
 
+      - name: Validate backend structure
+        run: |
+          echo "Checking backend structure..."
+          ls -la ./backend-repo/backend/
+          ls -la ./backend-repo/backend/TechnoOnlineShop.Api/
+          echo "Checking project files..."
+          find ./backend-repo/backend -name "*.csproj" -type f
+          echo "Backend validation complete!"
+
       - name: Build and push Techno API
         uses: docker/build-push-action@v7
         with:
