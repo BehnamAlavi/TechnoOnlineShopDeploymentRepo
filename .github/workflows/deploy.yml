@@ -46,19 +46,22 @@ jobs:
         run: |
           git clone https://github.com/BehnamAlavi/TechnoOnlineShop backend-repo
           cd backend-repo
-          git checkout main || git checkout master
+          git branch -a
+          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 
       - name: Clone ControlPanel Repository
         run: |
           git clone https://github.com/Techno-Real/TechnoOnlineShop.ControlPanel controlpanel-repo
           cd controlpanel-repo
-          git checkout main || git checkout master
+          git branch -a
+          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
 
       - name: Clone Frontend Repository
         run: |
           git clone https://github.com/BehnamAlavi/TechnoOnlineShop frontend-repo
           cd frontend-repo
-          # Assuming frontend is in a subdirectory
+          git branch -a
+          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
           ls -la
 
       - name: Get repository owner (lowercase)
