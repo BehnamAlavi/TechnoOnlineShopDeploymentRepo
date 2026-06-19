@@ -35,6 +35,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Configure Git credentials
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          echo "https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com" > ~/.git-credentials
+          git config --global credential.helper store
+
       - name: Clone Backend Repository
         run: |
           git clone https://github.com/BehnamAlavi/TechnoOnlineShop.git backend-repo
