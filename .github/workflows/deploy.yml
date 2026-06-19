@@ -44,19 +44,19 @@ jobs:
 
       - name: Clone Backend Repository
         run: |
-          git clone https://github.com/BehnamAlavi/TechnoOnlineShop.git backend-repo
+          git clone https://github.com/BehnamAlavi/TechnoOnlineShop backend-repo
           cd backend-repo
           git checkout main || git checkout master
 
       - name: Clone ControlPanel Repository
         run: |
-          git clone https://github.com/Techno-Real/TechnoOnlineShop.ControlPanel.git controlpanel-repo
+          git clone https://github.com/Techno-Real/TechnoOnlineShop.ControlPanel controlpanel-repo
           cd controlpanel-repo
           git checkout main || git checkout master
 
       - name: Clone Frontend Repository
         run: |
-          git clone https://github.com/BehnamAlavi/TechnoOnlineShop.git frontend-repo
+          git clone https://github.com/BehnamAlavi/TechnoOnlineShop frontend-repo
           cd frontend-repo
           # Assuming frontend is in a subdirectory
           ls -la
