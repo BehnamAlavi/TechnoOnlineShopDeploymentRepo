@@ -51,7 +51,7 @@ jobs:
 
       - name: Clone ControlPanel Repository
         run: |
-          git clone https://github.com/Techno-Real/TechnoOnlineShop.ControlPanel controlpanel-repo
+          git clone https://github.com/BehnamAlavi/ControlPanel.TechnoOnlineShop controlpanel-repo
           cd controlpanel-repo
           git branch -a
           git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
