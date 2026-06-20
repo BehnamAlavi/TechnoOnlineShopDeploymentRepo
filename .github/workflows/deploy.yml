@@ -119,6 +119,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.2.0
 
+      - name: Prepare variables
+        run: |
+           echo "REPO_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+
       - name: Set up SSH
         run: |
           mkdir -p ~/.ssh
@@ -164,7 +168,7 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
           set -e
-          REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+          #REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
           cat > ${{ env.VPS_APP_PATH }}/.env << ENVEOF
           POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
           REGISTRY_OWNER=${REPO_OWNER}
