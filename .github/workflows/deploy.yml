@@ -130,10 +130,10 @@ jobs:
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
           set -e
-          mkdir -p ${{ env.VPS_APP_PATH }}
-          mkdir -p ${{ env.VPS_APP_PATH }}/data/categories
-          mkdir -p ${{ env.VPS_APP_PATH }}/data/products
-          mkdir -p ${{ env.VPS_APP_PATH }}/data/productalbum
+          sudo mkdir -p ${{ env.VPS_APP_PATH }}
+          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/categories
+          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/products
+          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/productalbum
           echo "✓ Directories created"
           EOF
 
