@@ -102,7 +102,7 @@ services:
       POSTGRES_DB: technoshopdb
     volumes:
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql:ro
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
     ports:
       - "5432:5432"
     healthcheck:
