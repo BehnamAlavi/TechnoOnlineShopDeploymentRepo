@@ -1,13 +1,13 @@
-version: "3.9"
-
 services:
   nginx:
     image: nginx:1.27-alpine
     container_name: nginx
     ports:
-      - "1211:1211"
+      - "80:80"
+      - "443:443"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
       - ./data/categories:/var/www/categories:rw
       - ./data/products:/var/www/products:rw
       - ./data/productalbum:/var/www/productalbum:rw
@@ -17,7 +17,7 @@ services:
       - frontend-service
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:1211"]
+      test: ["CMD", "wget", "--no-check-certificate", "--quiet", "--tries=1", "--spider", "http://localhost/health"]
       interval: 30s
       timeout: 10s
       retries: 3
