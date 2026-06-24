@@ -8,9 +8,9 @@ services:
       - "1211:1211"
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./data/categories:/var/www/categories:ro
-      - ./data/products:/var/www/products:ro
-      - ./data/productalbum:/var/www/productalbum:ro
+      - ./data/categories:/var/www/categories:rw
+      - ./data/products:/var/www/products:rw
+      - ./data/productalbum:/var/www/productalbum:rw
     depends_on:
       - techno-api-service
       - controlpanel-api-service
