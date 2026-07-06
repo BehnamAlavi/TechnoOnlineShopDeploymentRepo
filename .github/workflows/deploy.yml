@@ -2,12 +2,29 @@ name: Build, Push to GHCR, and Deploy to VPS
 
 on:
   push:
-    branches:
-      - main
+    tags:
+      - 'v*'
   workflow_dispatch:
+    inputs:
+      techno_version:
+        description: "Techno-API version"
+        required: true
+        default: "1.0.0"
 
+      controlpanel_version:
+        description: "ControlPanel API version"
+        required: true
+        default: "1.0.0"
+
+      frontend_version:
+        description: "Frontend version"
+        required: true
+        default: "1.0.0"
 env:
   REGISTRY: ghcr.io
+  TECHNO_API_VERSION: ${{ github.event.inputs.techno_version }}
+  CONTROLPANEL_API_VERSION: ${{ github.event.inputs.controlpanel_version }}
+  FRONTEND_VERSION: ${{ github.event.inputs.frontend_version }}
   VPS_HOST: ${{ secrets.VPS_HOST }}
   VPS_USER: ${{ secrets.VPS_USER }}
   VPS_PORT: ${{ secrets.VPS_PORT }}
@@ -172,9 +189,9 @@ jobs:
           cat > ${{ env.VPS_APP_PATH }}/.env << ENVEOF
           POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
           REGISTRY_OWNER=${REPO_OWNER}
-          TECHNO_API_VERSION=1.0.0
-          CONTROLPANEL_API_VERSION=1.0.0
-          FRONTEND_VERSION=1.0.0
+          TECHNO_API_VERSION=${{ env.TECHNO_API_VERSION }}
+          CONTROLPANEL_API_VERSION=${{ env.CONTROLPANEL_API_VERSION }}
+          FRONTEND_VERSION=${{ env.FRONTEND_VERSION }}
           VPS_HOST=${{ env.VPS_HOST }}
           NODE_ENV=production
           ASPNETCORE_ENVIRONMENT=Production
