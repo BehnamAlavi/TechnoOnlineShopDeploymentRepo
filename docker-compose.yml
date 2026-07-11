@@ -32,6 +32,7 @@ services:
       - ./data/products:/var/www/products:ro
       - ./data/productalbum:/var/www/productalbum:ro
     environment:
+      - SERVICE_NAME=techno-api
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ConnectionStrings__Redis=redis:6379
@@ -60,6 +61,7 @@ services:
       - ./data/products:/var/www/products:rw
       - ./data/productalbum:/var/www/productalbum:rw
     environment:
+      - SERVICE_NAME=controlpanel-api
       - ASPNETCORE_URLS=http://+:5000
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Production}
       - ConnectionStrings__Redis=redis:6379
