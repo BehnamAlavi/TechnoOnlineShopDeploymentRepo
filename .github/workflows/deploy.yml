@@ -66,6 +66,7 @@ jobs:
          ref: ${{ env.TECHNO_API_VERSION != '' && format('v{0}', env.TECHNO_API_VERSION) || 'main' }}
          path: backend-repo
          fetch-depth: 0
+         token: ${{ secrets.DEPLOYMENT_PAT }}
 
       - name: Checkout ControlPanel Repository
         uses: actions/checkout@v4.2.0
@@ -74,6 +75,7 @@ jobs:
           ref: ${{ env.CONTROLPANEL_API_VERSION != '' && format('v{0}', env.CONTROLPANEL_API_VERSION) || 'main' }}
           path: controlpanel-repo
           fetch-depth: 0
+          token: ${{ secrets.DEPLOYMENT_PAT }}
          
       - name: Checkout Frontend Repository
         uses: actions/checkout@v4.2.0
@@ -82,6 +84,7 @@ jobs:
          ref: ${{ env.FRONTEND_VERSION != '' && format('v{0}', env.FRONTEND_VERSION) || 'main' }}
          path: frontend-repo
          fetch-depth: 0
+         token: ${{ secrets.DEPLOYMENT_PAT }}
 
       - name: Debug Frontend Files
         run: |
