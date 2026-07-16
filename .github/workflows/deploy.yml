@@ -104,6 +104,14 @@ jobs:
           find ./backend-repo/backend -name "*.csproj" -type f
           echo "Backend validation complete!"
 
+      - name: Debug file locations
+        run: |
+           echo "Root:"
+           ls -la ./backend-repo/backend
+
+           echo "API folder:"
+           ls -la ./backend-repo/backend/TechnoOnlineShop.Api
+
       - name: Build and push Techno API
         uses: docker/build-push-action@v7
         with:
