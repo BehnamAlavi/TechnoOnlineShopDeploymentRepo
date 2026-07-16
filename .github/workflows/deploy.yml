@@ -59,28 +59,34 @@ jobs:
           echo "https://github-actions[bot]:${{ secrets.DEPLOYMENT_PAT }}@github.com" > ~/.git-credentials
           git config --global credential.helper store
 
-      - name: Clone Backend Repository
-        run: |
-          git clone https://github.com/BehnamAlavi/TechnoOnlineShop backend-repo
-          cd backend-repo
-          git branch -a
-          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+      - name: Checkout Backend Repository
+        uses: actions/checkout@v4.2.0
+        with:
+         repository: BehnamAlavi/TechnoOnlineShop
+         ref: ${{ env.TECHNO_API_VERSION != '' && format('v{0}', env.TECHNO_API_VERSION) || 'main' }}
+         path: backend-repo
+         fetch-depth: 0
 
-      - name: Clone ControlPanel Repository
-        run: |
-          git clone https://github.com/BehnamAlavi/ControlPanel.TechnoOnlineShop controlpanel-repo
-          cd controlpanel-repo
-          git branch -a
-          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
+      - name: Checkout ControlPanel Repository
+        uses: actions/checkout@v4.2.0
+        with:
+          repository: BehnamAlavi/ControlPanel.TechnoOnlineShop
+          ref: ${{ env.CONTROLPANEL_API_VERSION != '' && format('v{0}', env.CONTROLPANEL_API_VERSION) || 'main' }}
+          path: controlpanel-repo
+          fetch-depth: 0
+         
+      - name: Checkout Frontend Repository
+        uses: actions/checkout@v4
+        with:
+         repository: BehnamAlavi/TechnoOnlineShop
+         ref: ${{ env.FRONTEND_VERSION != '' && format('v{0}', env.FRONTEND_VERSION) || 'main' }}
+         path: frontend-repo
+         fetch-depth: 0
 
-      - name: Clone Frontend Repository
+      - name: Debug Frontend Files
         run: |
-          git clone https://github.com/BehnamAlavi/TechnoOnlineShop frontend-repo
-          cd frontend-repo
-          git branch -a
-          git checkout $(git symbolic-ref refs/remotes/origin/HEAD | sed 's@^refs/remotes/origin/@@')
-          ls -la
-
+          ls -la ./frontend-repo
+    
       - name: Get repository owner (lowercase)
         id: repo-owner
         run: |
