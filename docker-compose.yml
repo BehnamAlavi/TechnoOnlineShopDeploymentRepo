@@ -85,8 +85,6 @@ services:
   frontend-service:
     image: ghcr.io/${REGISTRY_OWNER}/technoshoponlinedeploy/frontend:${FRONTEND_VERSION:-1.0.0}
     container_name: frontend
-    volumes:
-    - ./dist:/usr/share/nginx/html:ro
     ports:
       - "3000:80"
     # environment:
