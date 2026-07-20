@@ -162,81 +162,32 @@ jobs:
           echo "${{ env.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-
-      # - name: Create VPS directories
-      #   run: |
-      #     ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
-      #     set -e
-      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}
-      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/categories
-      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/products
-      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/productalbum
-      #     echo "✓ Directories created"
-      #     EOF
-
-      # - name: Transfer docker-compose.yml
-      #   run: |
-      #     scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-      #       docker-compose.yml ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
-
-      # - name: Transfer nginx.conf
-      #   run: |
-      #     scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-      #       nginx.conf ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
-
-      # - name: Transfer database initialization
-      #   run: |
-      #     if [ -f init.sql ]; then
-      #       scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-      #         init.sql ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
-      #     else
-      #       echo "init.sql not found, using backup.text if available"
-      #       if [ -f backup.text ]; then
-      #         scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-      #           backup.text ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/init.sql
-      #       fi
-      #     fi
-
-      # - name: Create .env file on VPS
-      #   run: |
-      #     ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
-      #     set -e
-      #     #REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-      #     cat > ${{ env.VPS_APP_PATH }}/.env << ENVEOF
-      #     POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
-      #     REGISTRY_OWNER=${REPO_OWNER}
-      #     TECHNO_API_VERSION=${{ env.TECHNO_API_VERSION }}
-      #     CONTROLPANEL_API_VERSION=${{ env.CONTROLPANEL_API_VERSION }}
-      #     FRONTEND_VERSION=${{ env.FRONTEND_VERSION }}
-      #     VPS_HOST=${{ env.VPS_HOST }}
-      #     NODE_ENV=production
-      #     ASPNETCORE_ENVIRONMENT=Production
-      #     ENVEOF
-      #     chmod 600 ${{ env.VPS_APP_PATH }}/.env
-      #     echo "✓ .env file created"
-      #     EOF
+          cat >> ~/.ssh/config << EOF
+          Host vps
+            HostName ${{ env.VPS_HOST }}
+            User ${{ env.VPS_USER }}
+            Port ${{ env.VPS_PORT }}
+            IdentityFile ~/.ssh/deploy_key
+            StrictHostKeyChecking no
+            UserKnownHostsFile /dev/null
+            ConnectTimeout 100
+          EOF
 
       - name: Login to GHCR and pull images
         run: |
-          ssh -o StrictHostKeyChecking=no \
-              -o ConnectTimeout=100 \
-              -i ~/.ssh/deploy_key \
-              -p ${{ env.VPS_PORT }} \
-              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
+          ssh vps << 'EOF'
+          set -euo pipefail
+          echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} \
+            -u "${{ github.actor }}" \
+            --password-stdin
+          cd "${{ env.VPS_APP_PATH }}"
+          docker compose pull
+          echo "✓ Images pulled successfully"
+          EOF
 
-              set -euo pipefail
-
-              echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} \
-               -u "${{ github.actor }}" \
-                --password-stdin
-              cd "${{ env.VPS_APP_PATH }}"
-
-              docker compose pull
-              echo "✓ Images pulled successfully"
-             EOF
       - name: Deploy services
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
+          ssh vps << 'EOF'
           set -e
           cd ${{ env.VPS_APP_PATH }}
           docker compose down || true
@@ -247,7 +198,7 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
+          ssh vps << 'EOF'
           set -e
           echo "=========================================="
           echo "Deployment Verification"
