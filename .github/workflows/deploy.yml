@@ -218,14 +218,22 @@ jobs:
 
       - name: Login to GHCR and pull images
         run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
-          set -e
-          echo "${{ secrets.GITHUB_TOKEN }}" | docker login -u ${{ github.actor }} --password-stdin ${{ env.REGISTRY }}
-          cd ${{ env.VPS_APP_PATH }}
-          docker compose pull
-          echo "✓ Images pulled successfully"
-          EOF
+          ssh -o StrictHostKeyChecking=no \
+              -o ConnectTimeout=100 \
+              -i ~/.ssh/deploy_key \
+              -p ${{ env.VPS_PORT }} \
+              ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
 
+              set -euo pipefail
+
+              echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} \
+               -u "${{ github.actor }}" \
+                --password-stdin
+              cd "${{ env.VPS_APP_PATH }}"
+
+              docker compose pull
+              echo "✓ Images pulled successfully"
+             EOF
       - name: Deploy services
         run: |
           ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
