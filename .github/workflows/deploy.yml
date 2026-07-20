@@ -156,60 +156,105 @@ jobs:
         run: |
            echo "REPO_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
-      - name: Set up SSH
+      - name: Set up SSH with comprehensive debugging
         run: |
+          set -x
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          
+          # Write SSH key with explicit newlines
           echo "${{ env.DEPLOY_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
-          cat >> ~/.ssh/config << EOF
-          Host vps
+          
+          # Verify key format
+          echo "=== SSH Key Info ==="
+          file ~/.ssh/deploy_key
+          head -1 ~/.ssh/deploy_key
+          tail -1 ~/.ssh/deploy_key
+          wc -l ~/.ssh/deploy_key
+          
+          # Add host to known_hosts
+          echo "=== Adding host to known_hosts ==="
+          ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} 2>&1 || true
+          ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>&1 || true
+          
+          # Create SSH config
+          cat > ~/.ssh/config << 'SSHCONFIG'
+          Host deploy-vps
             HostName ${{ env.VPS_HOST }}
             User ${{ env.VPS_USER }}
             Port ${{ env.VPS_PORT }}
             IdentityFile ~/.ssh/deploy_key
-            StrictHostKeyChecking no
-            UserKnownHostsFile /dev/null
-            ConnectTimeout 100
-          EOF
+            StrictHostKeyChecking accept-new
+            UserKnownHostsFile ~/.ssh/known_hosts
+            ConnectTimeout 120
+            BatchMode yes
+            LogLevel VERBOSE
+          SSHCONFIG
+          
+          chmod 600 ~/.ssh/config
+          
+          echo "=== SSH Config ==="
+          cat ~/.ssh/config
+          
+          # Test SSH connection
+          echo "=== Testing SSH connection ==="
+          ssh -v deploy-vps "echo 'SSH Connection successful!' && exit 0" || {
+            echo "SSH connection test failed with exit code $?"
+            exit 1
+          }
 
       - name: Login to GHCR and pull images
         run: |
-          ssh vps << 'EOF'
+          ssh -n deploy-vps bash -s << 'EOF'
           set -euo pipefail
+          
+          echo "Logging in to GHCR..."
           echo "${{ secrets.GITHUB_TOKEN }}" | docker login ${{ env.REGISTRY }} \
             -u "${{ github.actor }}" \
             --password-stdin
+          
           cd "${{ env.VPS_APP_PATH }}"
+          echo "Pulling Docker images..."
           docker compose pull
           echo "✓ Images pulled successfully"
           EOF
 
       - name: Deploy services
         run: |
-          ssh vps << 'EOF'
+          ssh -n deploy-vps bash -s << 'EOF'
           set -e
+          
           cd ${{ env.VPS_APP_PATH }}
+          echo "Stopping existing services..."
           docker compose down || true
+          
+          echo "Starting services..."
           docker compose up -d
+          
           sleep 10
           echo "✓ Services deployed"
           EOF
 
       - name: Verify deployment
         run: |
-          ssh vps << 'EOF'
+          ssh -n deploy-vps bash -s << 'EOF'
           set -e
+          
           echo "=========================================="
           echo "Deployment Verification"
           echo "=========================================="
+          
           cd ${{ env.VPS_APP_PATH }}
+          
           echo ""
           echo "Docker Compose Status:"
           docker compose ps
+          
           echo ""
           echo "Health Check Summary:"
           docker ps --format "table {{.Names}}\t{{.Status}}"
+          
           echo ""
           echo "=========================================="
           echo "✓ Deployment completed successfully!"
