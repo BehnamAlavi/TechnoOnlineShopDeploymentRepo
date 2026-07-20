@@ -163,16 +163,16 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -p ${{ env.VPS_PORT }} ${{ env.VPS_HOST }} >> ~/.ssh/known_hosts 2>/dev/null || true
 
-      - name: Create VPS directories
-        run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
-          set -e
-          sudo mkdir -p ${{ env.VPS_APP_PATH }}
-          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/categories
-          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/products
-          sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/productalbum
-          echo "✓ Directories created"
-          EOF
+      # - name: Create VPS directories
+      #   run: |
+      #     ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << 'EOF'
+      #     set -e
+      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}
+      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/categories
+      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/products
+      #     sudo mkdir -p ${{ env.VPS_APP_PATH }}/data/productalbum
+      #     echo "✓ Directories created"
+      #     EOF
 
       - name: Transfer docker-compose.yml
         run: |
