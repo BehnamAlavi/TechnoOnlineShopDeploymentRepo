@@ -174,47 +174,47 @@ jobs:
       #     echo "✓ Directories created"
       #     EOF
 
-      - name: Transfer docker-compose.yml
-        run: |
-          scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-            docker-compose.yml ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
+      # - name: Transfer docker-compose.yml
+      #   run: |
+      #     scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
+      #       docker-compose.yml ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
 
-      - name: Transfer nginx.conf
-        run: |
-          scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-            nginx.conf ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
+      # - name: Transfer nginx.conf
+      #   run: |
+      #     scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
+      #       nginx.conf ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
 
-      - name: Transfer database initialization
-        run: |
-          if [ -f init.sql ]; then
-            scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-              init.sql ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
-          else
-            echo "init.sql not found, using backup.text if available"
-            if [ -f backup.text ]; then
-              scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
-                backup.text ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/init.sql
-            fi
-          fi
+      # - name: Transfer database initialization
+      #   run: |
+      #     if [ -f init.sql ]; then
+      #       scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
+      #         init.sql ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/
+      #     else
+      #       echo "init.sql not found, using backup.text if available"
+      #       if [ -f backup.text ]; then
+      #         scp -i ~/.ssh/deploy_key -P ${{ env.VPS_PORT }} \
+      #           backup.text ${{ env.VPS_USER }}@${{ env.VPS_HOST }}:${{ env.VPS_APP_PATH }}/init.sql
+      #       fi
+      #     fi
 
-      - name: Create .env file on VPS
-        run: |
-          ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
-          set -e
-          #REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
-          cat > ${{ env.VPS_APP_PATH }}/.env << ENVEOF
-          POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
-          REGISTRY_OWNER=${REPO_OWNER}
-          TECHNO_API_VERSION=${{ env.TECHNO_API_VERSION }}
-          CONTROLPANEL_API_VERSION=${{ env.CONTROLPANEL_API_VERSION }}
-          FRONTEND_VERSION=${{ env.FRONTEND_VERSION }}
-          VPS_HOST=${{ env.VPS_HOST }}
-          NODE_ENV=production
-          ASPNETCORE_ENVIRONMENT=Production
-          ENVEOF
-          chmod 600 ${{ env.VPS_APP_PATH }}/.env
-          echo "✓ .env file created"
-          EOF
+      # - name: Create .env file on VPS
+      #   run: |
+      #     ssh -i ~/.ssh/deploy_key -p ${{ env.VPS_PORT }} ${{ env.VPS_USER }}@${{ env.VPS_HOST }} << EOF
+      #     set -e
+      #     #REPO_OWNER=$(echo "${{ github.repository_owner }}" | tr '[:upper:]' '[:lower:]')
+      #     cat > ${{ env.VPS_APP_PATH }}/.env << ENVEOF
+      #     POSTGRES_PASSWORD=${{ env.POSTGRES_PASSWORD }}
+      #     REGISTRY_OWNER=${REPO_OWNER}
+      #     TECHNO_API_VERSION=${{ env.TECHNO_API_VERSION }}
+      #     CONTROLPANEL_API_VERSION=${{ env.CONTROLPANEL_API_VERSION }}
+      #     FRONTEND_VERSION=${{ env.FRONTEND_VERSION }}
+      #     VPS_HOST=${{ env.VPS_HOST }}
+      #     NODE_ENV=production
+      #     ASPNETCORE_ENVIRONMENT=Production
+      #     ENVEOF
+      #     chmod 600 ${{ env.VPS_APP_PATH }}/.env
+      #     echo "✓ .env file created"
+      #     EOF
 
       - name: Login to GHCR and pull images
         run: |
