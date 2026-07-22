@@ -151,6 +151,39 @@ jobs:
         run: |
            echo "REPO_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
+      - name: Copy docker-compose.yml to VPS
+        run: |
+          echo "Uploading docker-compose.yml to VPS..."
+          COMPOSE_CONTENT=$(cat docker-compose.yml | base64 -w 0)
+          curl -X POST http://${{ secrets.VPS_HOST }}:9000/hooks/deploy-compose \
+            -H "Content-Type: application/json" \
+            -d '{"compose_content":"'$COMPOSE_CONTENT'"}' \
+            --connect-timeout 10 \
+            --max-time 30 \
+            || echo "Could not upload via webhook, manual update may be needed"
+
+      - name: Copy nginx.conf to VPS
+        run: |
+          echo "Uploading nginx.conf to VPS..."
+          NGINX_CONTENT=$(cat nginx.conf | base64 -w 0)
+          curl -X POST http://${{ secrets.VPS_HOST }}:9000/hooks/deploy-nginx \
+            -H "Content-Type: application/json" \
+            -d '{"nginx_content":"'$NGINX_CONTENT'"}' \
+            --connect-timeout 10 \
+            --max-time 30 \
+            || echo "Could not upload via webhook, manual update may be needed"
+
+      - name: Copy nginx-frontend.conf to VPS
+        run: |
+          echo "Uploading nginx-frontend.conf to VPS..."
+          NGINX_FE_CONTENT=$(cat nginx-frontend.conf | base64 -w 0)
+          curl -X POST http://${{ secrets.VPS_HOST }}:9000/hooks/deploy-nginx-frontend \
+            -H "Content-Type: application/json" \
+            -d '{"nginx_fe_content":"'$NGINX_FE_CONTENT'"}' \
+            --connect-timeout 10 \
+            --max-time 30 \
+            || echo "Could not upload via webhook, manual update may be needed"
+
       - name: Trigger VPS deployment via HTTP webhook
         run: |
           echo "Triggering deployment on VPS via HTTP webhook..."
