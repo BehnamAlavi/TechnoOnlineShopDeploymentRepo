@@ -8,9 +8,9 @@ services:
       - "1211:1211"
     volumes:
       - C:\techonline\nginx.conf:/etc/nginx/nginx.conf
-      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\Categories:/var/www/categories
-      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\Products:/var/www/products
-      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\ProductAlbum:/var/www/productalbum
+      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\categories:/var/www/categories
+      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\products:/var/www/products
+      - C:\Users\ASUS\source\repos\Techno_Real\TechnoOnlineShop.ControlPanel\ControlPanel.TechnoOnlineShop.Api\wwwroot\productAlbum:/var/www/productalbum
     depends_on:
       - techno-api-service
       - controlpanel-api-service
@@ -54,7 +54,7 @@ services:
 
   frontend-service:
     build:
-      context: C:\Users\ASUS\source\repos\BehnamAlavi\TechnoOnlineShop\frontend\techno-shop-online
+      context: C:\Users\ASUS\source\repos\BehnamAlavi\TechnoOnlineShop\frontend
     image: frontend:latest
     container_name: frontend
     ports:
