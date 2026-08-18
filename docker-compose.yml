@@ -56,6 +56,7 @@ services:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Production}
       ConnectionStrings__Redis: redis:6379
       ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=technoshopdb;Username=postgres;Password=${POSTGRES_PASSWORD}
+      #CONTROLPANEL_API_URL: http://controlpanel-api-service:5000
     volumes:
       - ./data/categories:/var/www/categories:rw
       - ./data/products:/var/www/products:rw
@@ -74,8 +75,8 @@ services:
 
   frontend-service:
     image: ghcr.io/${REGISTRY_OWNER}/technoshoponlinedeploy/frontend:${FRONTEND_VERSION:-1.0.0}
-    volumes:
-      - ./nginx-frontend.conf:/etc/nginx/nginx.conf:ro
+    # volumes:
+    #   - ./nginx-frontend.conf:/etc/nginx/nginx.conf:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]
