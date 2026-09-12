@@ -79,6 +79,7 @@ services:
     restart: unless-stopped
     environment:
       CONTROLPANEL_API_URL: http://controlpanel-api-service:5000
+      TECHNO_API_URL: http://techno-api-service:5000
     healthcheck:
       test: ["CMD-SHELL", "nc -z localhost 80 || exit 1"]
       interval: 30s
