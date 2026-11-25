@@ -74,8 +74,8 @@ services:
 
   frontend-service:
     image: ghcr.io/${REGISTRY_OWNER}/technoshoponlinedeploy/frontend:${FRONTEND_VERSION:-1.0.0}
-    # volumes:
-    #   - ./nginx-frontend.conf:/etc/nginx/nginx.conf:ro
+    volumes:
+       - next_image_cache:/app/.next/cache/images
     restart: unless-stopped
     environment:
       CONTROLPANEL_API_URL: http://controlpanel-api-service:5000
@@ -121,6 +121,7 @@ services:
 volumes:
   postgres_data:
   redis_data:
+  next_image_cache:
 
 networks:
   techno-network:
