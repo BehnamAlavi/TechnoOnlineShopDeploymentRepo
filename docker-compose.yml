@@ -37,8 +37,12 @@ services:
       - ./data/products:/var/www/products:ro
       - ./data/productalbum:/var/www/productalbum:ro
     depends_on:
-      - postgres
-      - redis
+      postgres:
+         condition: service_healthy 
+      redis:
+          condition: service_healthy
+      controlpanel-efmigrator:
+          condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]
@@ -54,7 +58,7 @@ services:
       SERVICE_NAME: controlpanel-efmigrator-api
       ConnectionStrings__ControlPanelDatabase: Host=postgres;Port=5432;Database=technoshopdb;Username=postgres;Password=${POSTGRES_PASSWORD}
     volumes:
-     - ./migrations/ControlPanel.sql:/app/migrations/ControlPanel.sql
+     - ./migrationfiles/ControlPanel.sql:/app/migrations/ControlPanel.sql:ro
     depends_on:
       postgres:
         condition: service_healthy
