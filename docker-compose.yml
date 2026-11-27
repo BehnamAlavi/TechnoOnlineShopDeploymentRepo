@@ -48,6 +48,20 @@ services:
     networks:
       - techno-network
 
+  controlpanel-efmigrator:
+    image: ghcr.io/${REGISTRY_OWNER}/technoshoponlinedeploy/controlpanel-efmigrator:${CONTROLPANEL_EFMIGRATOR_VERSION:-1.0.0}
+    environment:
+      SERVICE_NAME: controlpanel-efmigrator-api
+      ConnectionStrings__ControlPanelDatabase: Host=postgres;Port=5432;Database=technoshopdb;Username=postgres;Password=${POSTGRES_PASSWORD}
+    volumes:
+     - ./migrations/ControlPanel.sql:/app/migrations/ControlPanel.sql
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - techno-network
+    restart: "no"
+
   controlpanel-api-service:
     image: ghcr.io/${REGISTRY_OWNER}/technoshoponlinedeploy/controlpanel-api:${CONTROLPANEL_API_VERSION:-1.0.0}
     environment:
@@ -61,8 +75,12 @@ services:
       - ./data/products:/var/www/products:rw
       - ./data/productalbum:/var/www/productalbum:rw
     depends_on:
-      - postgres
-      - redis
+      postgres:
+         condition: service_healthy 
+      redis:
+          condition: service_healthy
+      controlpanel-efmigrator:
+          condition: service_completed_successfully
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]

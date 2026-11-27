@@ -11,6 +11,11 @@ on:
         required: true
         default: "1.0.0"
 
+      controlpanel_efmigrator_version:
+        description: "Ef migrator ControlPanel API version"
+        required: true
+        default: "1.0.0.10"
+
       controlpanel_version:
         description: "ControlPanel API version"
         required: true
@@ -23,6 +28,7 @@ on:
 env:
   REGISTRY: ghcr.io
   TECHNO_API_VERSION: ${{ github.event.inputs.techno_version }}
+  CONTROLPANEL_EFMIGRATOR_VERSION: ${{ github.event.inputs.controlpanel_efmigrator_version }}
   CONTROLPANEL_API_VERSION: ${{ github.event.inputs.controlpanel_version }}
   FRONTEND_VERSION: ${{ github.event.inputs.frontend_version }}
   VPS_APP_PATH: /opt/techno-shop
@@ -63,6 +69,15 @@ jobs:
          path: backend-repo
          fetch-depth: 0
          token: ${{ secrets.DEPLOYMENT_PAT }}
+
+      - name: Checkout ControlPanel EFMigrator Repository
+        uses: actions/checkout@v4.2.0
+        with:
+          repository: BehnamAlavi/TechnoOnlineShop.ControlPanel.EfMigrator
+          ref: ${{ env.CONTROLPANEL_EFMIGRATOR_VERSION != '' && format('v{0}', env.CONTROLPANEL_EFMIGRATOR_VERSION) || 'main' }}
+          path: controlpanel-efmigrator-repo
+          fetch-depth: 0
+          token: ${{ secrets.DEPLOYMENT_PAT }}
 
       - name: Checkout ControlPanel Repository
         uses: actions/checkout@v4.2.0
@@ -115,6 +130,17 @@ jobs:
           file: ./backend-repo/backend/TechnoOnlineShop.Api/Dockerfile
           push: true
           tags: ${{ env.REGISTRY }}/${{ steps.repo-owner.outputs.owner }}/technoshoponlinedeploy/techno-api:${{ env.TECHNO_API_VERSION }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          provenance: false
+
+      - name: Build and push ControlPanel Ef Migrator Service
+        uses: docker/build-push-action@v7
+        with:
+          context: ./controlpanel-efmigrator-repo
+          file: ./controlpanel-efmigrator-repo/Dockerfile
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ steps.repo-owner.outputs.owner }}/technoshoponlinedeploy/controlpanel-efmigrator:${{ env.CONTROLPANEL_EFMIGRATOR_VERSION }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: false
