@@ -174,9 +174,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4.2.0
 
-      - name: Prepare variables
+      - name: Prepare deployment environment payload
+        shell: bash
+        env:
+         WEBHOOK_URL: ${{ secrets.DEPLOY_WEBHOOK_URL }}
         run: |
-           echo "REPO_OWNER=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+         {
+           cat .env
+
+           printf '\r\n'
+
+           printf 'TECHNO_API_VERSION=%s\r\n' "$TECHNO_API_VERSION"
+           printf 'CONTROLPANEL_EFMIGRATOR_VERSION=%s\r\n' "$CONTROLPANEL_EFMIGRATOR_VERSION"
+           printf 'CONTROLPANEL_API_VERSION=%s\r\n' "$CONTROLPANEL_API_VERSION"
+           printf 'FRONTEND_VERSION=%s\r\n' "$FRONTEND_VERSION"
+
+          } > deployment.env
+
+           echo "Sending deployment configuration to webhook..."
+
+           ENV_CONTENT=$(base64 -w 0 deployment.env)
+
+           curl --fail-with-body --silent --show-error \
+               -X POST http://${{ secrets.VPS_HOST }}:9000/hooks/deploy-env \
+               -H "Content-Type: application/json" \
+               -d "{\"env_content\":\"$ENV_CONTENT\"}" \
+               --connect-timeout 10 \
+               --max-time 30
 
       - name: Copy docker-compose.yml to VPS
         run: |
